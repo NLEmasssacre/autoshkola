@@ -1,0 +1,418 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Панель управления — Автошкола</title>
+  <link rel="stylesheet" href="css/style.css">
+</head>
+<body>
+
+<div class="app" id="app">
+
+  <!-- ══════════════════ SIDEBAR ══════════════════════════ -->
+  <aside class="sidebar" id="sidebar">
+    <div class="sidebar-logo">
+      <div class="sidebar-logo-icon">🚗</div>
+      <div class="sidebar-logo-text">
+        <strong>Автошкола</strong>
+        <span>Управление</span>
+      </div>
+    </div>
+
+    <nav class="sidebar-nav" id="sidebar-nav">
+      <!-- filled by JS based on role -->
+    </nav>
+
+    <div class="sidebar-user">
+      <div class="sidebar-avatar" id="sidebar-avatar">АД</div>
+      <div class="sidebar-user-info">
+        <div class="sidebar-user-name" id="sidebar-name">Администратор</div>
+        <div class="sidebar-user-role" id="sidebar-role">admin</div>
+      </div>
+      <button class="sidebar-logout" id="logout-btn" title="Выйти">⏏</button>
+    </div>
+  </aside>
+
+  <!-- ══════════════════ MAIN ═════════════════════════════ -->
+  <div class="main">
+    <!-- Topbar -->
+    <header class="topbar">
+      <div style="display:flex;align-items:center;gap:.75rem">
+        <button class="btn btn-secondary btn-sm" id="menu-toggle" style="display:none">☰</button>
+        <span class="topbar-title" id="page-title">Обзор</span>
+      </div>
+      <div class="topbar-right">
+        <span class="topbar-date" id="topbar-date"></span>
+      </div>
+    </header>
+
+    <!-- Pages -->
+    <div class="content">
+
+      <!-- ── OVERVIEW (admin) ──────────────────────────── -->
+      <div id="page-overview" class="page">
+        <div class="stats-grid" id="stats-grid">
+          <div class="stat-card">
+            <div class="stat-icon blue">👨‍🎓</div>
+            <div class="stat-body">
+              <div class="stat-value" id="stat-students">—</div>
+              <div class="stat-label">Активных учеников</div>
+            </div>
+          </div>
+          <div class="stat-card">
+            <div class="stat-icon green">👨‍🏫</div>
+            <div class="stat-body">
+              <div class="stat-value" id="stat-instructors">—</div>
+              <div class="stat-label">Инструкторов</div>
+            </div>
+          </div>
+          <div class="stat-card">
+            <div class="stat-icon amber">📅</div>
+            <div class="stat-body">
+              <div class="stat-value" id="stat-lessons">—</div>
+              <div class="stat-label">Предстоящих занятий</div>
+            </div>
+          </div>
+          <div class="stat-card">
+            <div class="stat-icon purple">🏆</div>
+            <div class="stat-body">
+              <div class="stat-value" id="stat-exams">—</div>
+              <div class="stat-label">Сдано экзаменов</div>
+            </div>
+          </div>
+        </div>
+
+        <div class="card">
+          <div class="card-header">
+            <span class="card-title">Ближайшие занятия</span>
+            <button class="btn btn-primary btn-sm" onclick="navigate('lessons')">Все занятия</button>
+          </div>
+          <div class="table-wrap">
+            <table>
+              <thead><tr>
+                <th>Название</th><th>Тип</th><th>Дата</th><th>Инструктор</th><th>Места</th><th>Статус</th>
+              </tr></thead>
+              <tbody id="overview-lessons-body">
+                <tr><td colspan="6" style="text-align:center;padding:2rem;color:var(--c-slate-400)"><span class="spinner"></span></td></tr>
+              </tbody>
+            </table>
+          </div>
+        </div>
+      </div>
+
+      <!-- ── STUDENTS ──────────────────────────────────── -->
+      <div id="page-students" class="page">
+        <div class="section-header">
+          <h2 class="section-title">Ученики <span id="students-count"></span></h2>
+          <div style="display:flex;gap:.5rem" id="students-actions">
+            <button class="btn btn-primary" onclick="openModal('add-student')">+ Добавить ученика</button>
+          </div>
+        </div>
+        <div class="toolbar">
+          <div class="search-wrap">
+            <span class="search-icon">🔍</span>
+            <input class="search-input" type="text" placeholder="Поиск по имени или email..." id="students-search">
+          </div>
+          <select class="form-select" style="max-width:160px;padding:.58rem .9rem;font-size:.855rem" id="students-status-filter">
+            <option value="">Все статусы</option>
+            <option value="active">Активные</option>
+            <option value="graduated">Выпускники</option>
+            <option value="suspended">Отчислены</option>
+          </select>
+        </div>
+        <div class="card">
+          <div class="table-wrap">
+            <table>
+              <thead><tr>
+                <th>Ученик</th><th>Контакт</th><th>Категория</th><th>Часов</th><th>Дата записи</th><th>Статус</th><th></th>
+              </tr></thead>
+              <tbody id="students-body">
+                <tr><td colspan="7" style="text-align:center;padding:2rem"><span class="spinner"></span></td></tr>
+              </tbody>
+            </table>
+          </div>
+        </div>
+      </div>
+
+      <!-- ── INSTRUCTORS ───────────────────────────────── -->
+      <div id="page-instructors" class="page">
+        <div class="section-header">
+          <h2 class="section-title">Инструкторы <span id="instructors-count"></span></h2>
+          <button class="btn btn-primary" onclick="openModal('add-instructor')" id="add-instructor-btn">+ Добавить инструктора</button>
+        </div>
+        <div class="toolbar">
+          <div class="search-wrap">
+            <span class="search-icon">🔍</span>
+            <input class="search-input" type="text" placeholder="Поиск..." id="instructors-search">
+          </div>
+        </div>
+        <div class="card">
+          <div class="table-wrap">
+            <table>
+              <thead><tr>
+                <th>Инструктор</th><th>Контакт</th><th>Лицензия</th><th>Опыт</th><th>Специализация</th><th>Рейтинг</th><th></th>
+              </tr></thead>
+              <tbody id="instructors-body">
+                <tr><td colspan="7" style="text-align:center;padding:2rem"><span class="spinner"></span></td></tr>
+              </tbody>
+            </table>
+          </div>
+        </div>
+      </div>
+
+      <!-- ── LESSONS ───────────────────────────────────── -->
+      <div id="page-lessons" class="page">
+        <div class="section-header">
+          <h2 class="section-title">Занятия <span id="lessons-count"></span></h2>
+          <button class="btn btn-primary" onclick="openModal('add-lesson')" id="add-lesson-btn">+ Создать занятие</button>
+        </div>
+        <div class="toolbar">
+          <div class="search-wrap">
+            <span class="search-icon">🔍</span>
+            <input class="search-input" type="text" placeholder="Поиск занятий..." id="lessons-search">
+          </div>
+          <select class="form-select" style="max-width:160px;padding:.58rem .9rem;font-size:.855rem" id="lessons-type-filter">
+            <option value="">Все типы</option>
+            <option value="theory">Теория</option>
+            <option value="practice">Практика</option>
+          </select>
+        </div>
+        <!-- Admin/instructor: table; Student: cards -->
+        <div id="lessons-table-wrap" class="card" style="display:none">
+          <div class="table-wrap">
+            <table>
+              <thead><tr>
+                <th>Название</th><th>Тип</th><th>Дата и время</th><th>Инструктор</th><th>Место</th><th>Записано</th><th>Статус</th><th></th>
+              </tr></thead>
+              <tbody id="lessons-body">
+                <tr><td colspan="8" style="text-align:center;padding:2rem"><span class="spinner"></span></td></tr>
+              </tbody>
+            </table>
+          </div>
+        </div>
+        <div id="lessons-cards-wrap" style="display:none">
+          <div class="lesson-grid" id="lessons-cards"></div>
+        </div>
+      </div>
+
+      <!-- ── MY LESSONS (student) ──────────────────────── -->
+      <div id="page-my-lessons" class="page">
+        <div class="section-header">
+          <h2 class="section-title">Мои занятия</h2>
+        </div>
+        <div class="card">
+          <div class="table-wrap">
+            <table>
+              <thead><tr>
+                <th>Название</th><th>Тип</th><th>Дата и время</th><th>Место</th><th>Статус занятия</th><th>Моя запись</th>
+              </tr></thead>
+              <tbody id="my-lessons-body">
+                <tr><td colspan="6" style="text-align:center;padding:2rem"><span class="spinner"></span></td></tr>
+              </tbody>
+            </table>
+          </div>
+        </div>
+      </div>
+
+      <!-- ── EXAMS ─────────────────────────────────────── -->
+      <div id="page-exams" class="page">
+        <div class="section-header">
+          <h2 class="section-title">Экзамены <span id="exams-count"></span></h2>
+          <button class="btn btn-primary" onclick="openModal('add-exam')" id="add-exam-btn">+ Добавить экзамен</button>
+        </div>
+        <div class="card">
+          <div class="table-wrap">
+            <table>
+              <thead><tr>
+                <th>Ученик</th><th>Тип</th><th>Дата</th><th>Балл</th><th>Попытка</th><th>Результат</th><th></th>
+              </tr></thead>
+              <tbody id="exams-body">
+                <tr><td colspan="7" style="text-align:center;padding:2rem"><span class="spinner"></span></td></tr>
+              </tbody>
+            </table>
+          </div>
+        </div>
+      </div>
+
+    </div><!-- /content -->
+  </div><!-- /main -->
+</div><!-- /app -->
+
+<!-- ══════════════════════════════════════════════════════
+     MODALS
+     ══════════════════════════════════════════════════════ -->
+
+<!-- Add Student -->
+<div class="modal-overlay" id="modal-add-student">
+  <div class="modal">
+    <div class="modal-header">
+      <span class="modal-title">Добавить ученика</span>
+      <button class="modal-close" onclick="closeModal('add-student')">✕</button>
+    </div>
+    <form id="form-add-student">
+      <div class="modal-body">
+        <div class="form-row">
+          <div class="form-group"><label class="form-label">Имя</label><input class="form-input" name="first_name" required placeholder="Иван"></div>
+          <div class="form-group"><label class="form-label">Фамилия</label><input class="form-input" name="last_name" required placeholder="Иванов"></div>
+        </div>
+        <div class="form-group"><label class="form-label">Email</label><input type="email" class="form-input" name="email" required placeholder="ivan@mail.ru"></div>
+        <div class="form-row">
+          <div class="form-group"><label class="form-label">Телефон</label><input class="form-input" name="phone" placeholder="+7 (999) 000-00-00"></div>
+          <div class="form-group"><label class="form-label">Дата рождения</label><input type="date" class="form-input" name="date_of_birth"></div>
+        </div>
+        <div class="form-row">
+          <div class="form-group">
+            <label class="form-label">Категория</label>
+            <select class="form-select" name="license_category">
+              <option value="A">A</option><option value="A1">A1</option>
+              <option value="B" selected>B</option><option value="B1">B1</option>
+              <option value="C">C</option><option value="D">D</option>
+            </select>
+          </div>
+          <div class="form-group"><label class="form-label">Пароль</label><input type="password" class="form-input" name="password" required placeholder="Минимум 6 симв." minlength="6"></div>
+        </div>
+        <div class="form-group"><label class="form-label">Примечания</label><textarea class="form-textarea" name="notes" rows="2" placeholder="Дополнительная информация..."></textarea></div>
+      </div>
+      <div class="modal-footer">
+        <button type="button" class="btn btn-secondary" onclick="closeModal('add-student')">Отмена</button>
+        <button type="submit" class="btn btn-primary">Добавить ученика</button>
+      </div>
+    </form>
+  </div>
+</div>
+
+<!-- Add Instructor -->
+<div class="modal-overlay" id="modal-add-instructor">
+  <div class="modal">
+    <div class="modal-header">
+      <span class="modal-title">Добавить инструктора</span>
+      <button class="modal-close" onclick="closeModal('add-instructor')">✕</button>
+    </div>
+    <form id="form-add-instructor">
+      <div class="modal-body">
+        <div class="form-row">
+          <div class="form-group"><label class="form-label">Имя</label><input class="form-input" name="first_name" required placeholder="Алексей"></div>
+          <div class="form-group"><label class="form-label">Фамилия</label><input class="form-input" name="last_name" required placeholder="Смирнов"></div>
+        </div>
+        <div class="form-group"><label class="form-label">Email</label><input type="email" class="form-input" name="email" required></div>
+        <div class="form-row">
+          <div class="form-group"><label class="form-label">Телефон</label><input class="form-input" name="phone"></div>
+          <div class="form-group"><label class="form-label">Номер лицензии</label><input class="form-input" name="license_number" required placeholder="LIC-123456"></div>
+        </div>
+        <div class="form-row">
+          <div class="form-group"><label class="form-label">Опыт (лет)</label><input type="number" class="form-input" name="experience_years" min="0" placeholder="5"></div>
+          <div class="form-group"><label class="form-label">Автомобиль</label><input class="form-input" name="vehicle_number" placeholder="А123БВ"></div>
+        </div>
+        <div class="form-group"><label class="form-label">Специализация</label><input class="form-input" name="specialization" placeholder="Категория B, C"></div>
+        <div class="form-group"><label class="form-label">Пароль</label><input type="password" class="form-input" name="password" required placeholder="Минимум 6 симв." minlength="6"></div>
+      </div>
+      <div class="modal-footer">
+        <button type="button" class="btn btn-secondary" onclick="closeModal('add-instructor')">Отмена</button>
+        <button type="submit" class="btn btn-primary">Добавить инструктора</button>
+      </div>
+    </form>
+  </div>
+</div>
+
+<!-- Add Lesson -->
+<div class="modal-overlay" id="modal-add-lesson">
+  <div class="modal modal-lg">
+    <div class="modal-header">
+      <span class="modal-title">Создать занятие</span>
+      <button class="modal-close" onclick="closeModal('add-lesson')">✕</button>
+    </div>
+    <form id="form-add-lesson">
+      <div class="modal-body">
+        <div class="form-group"><label class="form-label">Название</label><input class="form-input" name="title" required placeholder="Правила дорожного движения — урок 1"></div>
+        <div class="form-row">
+          <div class="form-group">
+            <label class="form-label">Тип</label>
+            <select class="form-select" name="lesson_type" required>
+              <option value="">— Выберите —</option>
+              <option value="theory">Теория</option>
+              <option value="practice">Практика</option>
+            </select>
+          </div>
+          <div class="form-group"><label class="form-label">Инструктор</label>
+            <select class="form-select" name="instructor_id" id="lesson-instructor-select">
+              <option value="">— Не назначен —</option>
+            </select>
+          </div>
+        </div>
+        <div class="form-row">
+          <div class="form-group"><label class="form-label">Дата и время</label><input type="datetime-local" class="form-input" name="scheduled_date" required></div>
+          <div class="form-group"><label class="form-label">Длительность (мин)</label><input type="number" class="form-input" name="duration_minutes" value="60" min="15"></div>
+        </div>
+        <div class="form-row">
+          <div class="form-group"><label class="form-label">Макс. студентов</label><input type="number" class="form-input" name="max_students" value="10" min="1"></div>
+          <div class="form-group"><label class="form-label">Место</label><input class="form-input" name="location" placeholder="Аудитория 101"></div>
+        </div>
+        <div class="form-group"><label class="form-label">Описание</label><textarea class="form-textarea" name="description" rows="3" placeholder="Краткое описание занятия..."></textarea></div>
+      </div>
+      <div class="modal-footer">
+        <button type="button" class="btn btn-secondary" onclick="closeModal('add-lesson')">Отмена</button>
+        <button type="submit" class="btn btn-primary">Создать занятие</button>
+      </div>
+    </form>
+  </div>
+</div>
+
+<!-- Add Exam -->
+<div class="modal-overlay" id="modal-add-exam">
+  <div class="modal">
+    <div class="modal-header">
+      <span class="modal-title">Добавить экзамен</span>
+      <button class="modal-close" onclick="closeModal('add-exam')">✕</button>
+    </div>
+    <form id="form-add-exam">
+      <div class="modal-body">
+        <div class="form-group">
+          <label class="form-label">Ученик</label>
+          <select class="form-select" name="student_id" id="exam-student-select" required>
+            <option value="">— Выберите ученика —</option>
+          </select>
+        </div>
+        <div class="form-row">
+          <div class="form-group">
+            <label class="form-label">Тип экзамена</label>
+            <select class="form-select" name="exam_type" required>
+              <option value="">— Выберите —</option>
+              <option value="theory">Теория</option>
+              <option value="practice">Практика</option>
+            </select>
+          </div>
+          <div class="form-group"><label class="form-label">Дата экзамена</label><input type="datetime-local" class="form-input" name="exam_date" required></div>
+        </div>
+        <div class="form-row">
+          <div class="form-group"><label class="form-label">Балл (0–100)</label><input type="number" class="form-input" name="score" min="0" max="100" placeholder="Заполнить после"></div>
+          <div class="form-group"><label class="form-label">Попытка №</label><input type="number" class="form-input" name="attempt_number" value="1" min="1"></div>
+        </div>
+        <div class="form-row">
+          <div class="form-group">
+            <label class="form-label">Результат</label>
+            <select class="form-select" name="passed">
+              <option value="">— Не определён —</option>
+              <option value="true">Сдан ✓</option>
+              <option value="false">Не сдан ✗</option>
+            </select>
+          </div>
+          <div class="form-group"><label class="form-label">Экзаменатор</label><input class="form-input" name="examiner" placeholder="ФИО экзаменатора"></div>
+        </div>
+        <div class="form-group"><label class="form-label">Примечания</label><textarea class="form-textarea" name="notes" rows="2"></textarea></div>
+      </div>
+      <div class="modal-footer">
+        <button type="button" class="btn btn-secondary" onclick="closeModal('add-exam')">Отмена</button>
+        <button type="submit" class="btn btn-primary">Добавить экзамен</button>
+      </div>
+    </form>
+  </div>
+</div>
+
+<!-- Toast container -->
+<div id="toast-container"></div>
+
+<script src="js/utils.js"></script>
+<script src="js/dashboard.js"></script>
+</body>
+</html>

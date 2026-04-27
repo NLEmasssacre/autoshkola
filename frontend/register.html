@@ -1,0 +1,140 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Регистрация — Автошкола</title>
+  <link rel="stylesheet" href="css/style.css">
+</head>
+<body>
+<div class="auth-page">
+
+  <!-- Left branding -->
+  <div class="auth-brand">
+    <div class="auth-brand-icon">🎓</div>
+    <h1>Автошкола</h1>
+    <p>Создайте аккаунт и начните обучение уже сегодня</p>
+    <div class="auth-brand-features">
+      <div class="auth-brand-feature"><span class="icon">⚡</span> Быстрая запись на занятия</div>
+      <div class="auth-brand-feature"><span class="icon">📊</span> Отслеживание прогресса</div>
+      <div class="auth-brand-feature"><span class="icon">📱</span> Доступ с любого устройства</div>
+    </div>
+  </div>
+
+  <!-- Right form -->
+  <div class="auth-form-panel">
+    <div class="auth-form-wrap">
+      <h2>Регистрация</h2>
+      <p class="subtitle">Создайте новый аккаунт</p>
+
+      <div id="alert" class="alert">
+        <span id="alert-icon">⚠</span>
+        <span id="alert-msg"></span>
+      </div>
+
+      <form id="register-form">
+        <div class="form-row">
+          <div class="form-group">
+            <label class="form-label">Имя</label>
+            <input type="text" id="first_name" class="form-input" placeholder="Иван" required>
+          </div>
+          <div class="form-group">
+            <label class="form-label">Фамилия</label>
+            <input type="text" id="last_name" class="form-input" placeholder="Иванов" required>
+          </div>
+        </div>
+        <div class="form-group">
+          <label class="form-label">Email</label>
+          <input type="email" id="email" class="form-input" placeholder="example@mail.ru" required>
+        </div>
+        <div class="form-group">
+          <label class="form-label">Телефон</label>
+          <input type="tel" id="phone" class="form-input" placeholder="+7 (999) 000-00-00">
+        </div>
+        <div class="form-group">
+          <label class="form-label">Роль</label>
+          <select id="role" class="form-select" required>
+            <option value="">— Выберите роль —</option>
+            <option value="student">Ученик</option>
+            <option value="instructor">Инструктор</option>
+          </select>
+        </div>
+        <div class="form-group">
+          <label class="form-label">Пароль</label>
+          <input type="password" id="password" class="form-input" placeholder="Минимум 6 символов" required minlength="6">
+        </div>
+        <div class="form-group">
+          <label class="form-label">Повторите пароль</label>
+          <input type="password" id="password2" class="form-input" placeholder="••••••••" required>
+        </div>
+        <button type="submit" class="btn btn-primary btn-full btn-lg" id="submit-btn">
+          <span id="btn-text">Зарегистрироваться</span>
+          <span id="btn-spinner" style="display:none"><span class="spinner"></span></span>
+        </button>
+      </form>
+
+      <p style="margin-top:1.5rem; text-align:center; font-size:.875rem; color:var(--c-slate-500)">
+        Уже есть аккаунт?
+        <a href="login.html" class="form-link">Войти</a>
+      </p>
+    </div>
+  </div>
+</div>
+
+<script>
+  if (localStorage.getItem('token')) window.location.href = 'dashboard.html';
+
+  document.getElementById('register-form').addEventListener('submit', async (e) => {
+    e.preventDefault();
+    const btn      = document.getElementById('submit-btn');
+    const btnText  = document.getElementById('btn-text');
+    const spinner  = document.getElementById('btn-spinner');
+    const alert    = document.getElementById('alert');
+    const alertMsg = document.getElementById('alert-msg');
+    const alertIcon = document.getElementById('alert-icon');
+
+    const showAlert = (msg, type = 'error') => {
+      alertMsg.textContent = msg;
+      alertIcon.textContent = type === 'success' ? '✓' : '⚠';
+      alert.className = `alert ${type === 'success' ? 'alert-success' : 'alert-error'} show`;
+    };
+
+    const pass  = document.getElementById('password').value;
+    const pass2 = document.getElementById('password2').value;
+    if (pass !== pass2) return showAlert('Пароли не совпадают');
+
+    btnText.style.display = 'none';
+    spinner.style.display = 'inline';
+    btn.disabled = true;
+    alert.classList.remove('show');
+
+    try {
+      const res = await fetch('/api/register', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          email:      document.getElementById('email').value.trim(),
+          password:   pass,
+          role:       document.getElementById('role').value,
+          first_name: document.getElementById('first_name').value.trim(),
+          last_name:  document.getElementById('last_name').value.trim(),
+          phone:      document.getElementById('phone').value.trim(),
+        }),
+      });
+      const data = await res.json();
+      if (!res.ok) throw new Error(data.message || 'Ошибка регистрации');
+      localStorage.setItem('token', data.token);
+      localStorage.setItem('user',  JSON.stringify(data.user));
+      showAlert('Аккаунт создан! Перенаправляем...', 'success');
+      setTimeout(() => window.location.href = 'dashboard.html', 1200);
+    } catch (err) {
+      showAlert(err.message);
+    } finally {
+      btnText.style.display = '';
+      spinner.style.display = 'none';
+      btn.disabled = false;
+    }
+  });
+</script>
+</body>
+</html>

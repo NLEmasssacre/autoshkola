@@ -1,0 +1,109 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Вход — Автошкола</title>
+  <link rel="stylesheet" href="css/style.css">
+</head>
+<body>
+<div class="auth-page">
+
+  <!-- Left branding -->
+  <div class="auth-brand">
+    <div class="auth-brand-icon">🚗</div>
+    <h1>Автошкола</h1>
+    <p>Управление учениками, инструкторами и занятиями в одном месте</p>
+    <div class="auth-brand-features">
+      <div class="auth-brand-feature"><span class="icon">👨‍🎓</span> Учёт учеников и прогресса</div>
+      <div class="auth-brand-feature"><span class="icon">📅</span> Расписание занятий</div>
+      <div class="auth-brand-feature"><span class="icon">📝</span> Учёт экзаменов и результатов</div>
+      <div class="auth-brand-feature"><span class="icon">🏆</span> Рейтинг инструкторов</div>
+    </div>
+  </div>
+
+  <!-- Right form -->
+  <div class="auth-form-panel">
+    <div class="auth-form-wrap">
+      <h2>Добро пожаловать!</h2>
+      <p class="subtitle">Войдите в свой аккаунт для продолжения</p>
+
+      <div id="alert" class="alert alert-error">
+        <span>⚠</span>
+        <span id="alert-msg"></span>
+      </div>
+
+      <form id="login-form">
+        <div class="form-group">
+          <label class="form-label">Email</label>
+          <input type="email" id="email" class="form-input" placeholder="example@mail.ru" required autocomplete="email">
+        </div>
+        <div class="form-group">
+          <label class="form-label">Пароль</label>
+          <input type="password" id="password" class="form-input" placeholder="••••••••" required autocomplete="current-password">
+        </div>
+        <button type="submit" class="btn btn-primary btn-full btn-lg" id="submit-btn">
+          <span id="btn-text">Войти</span>
+          <span id="btn-spinner" style="display:none"><span class="spinner"></span></span>
+        </button>
+      </form>
+
+      <p style="margin-top:1.5rem; text-align:center; font-size:.875rem; color:var(--c-slate-500)">
+        Нет аккаунта?
+        <a href="register.html" class="form-link">Зарегистрироваться</a>
+      </p>
+
+      <div style="margin-top:2rem; padding:1rem; background:var(--c-slate-50); border-radius:var(--r); border:1px solid var(--c-slate-200)">
+        <p style="font-size:.75rem; color:var(--c-slate-500); font-weight:600; margin-bottom:.5rem; text-transform:uppercase; letter-spacing:.05em">Тест-данные</p>
+        <p style="font-size:.8rem; color:var(--c-slate-600)">
+          📧 admin@autoshkola.ru<br>
+          🔑 Admin1234!
+        </p>
+      </div>
+    </div>
+  </div>
+</div>
+
+<script>
+  // Redirect if already logged in
+  if (localStorage.getItem('token')) window.location.href = 'dashboard.html';
+
+  document.getElementById('login-form').addEventListener('submit', async (e) => {
+    e.preventDefault();
+    const btn     = document.getElementById('submit-btn');
+    const btnText = document.getElementById('btn-text');
+    const spinner = document.getElementById('btn-spinner');
+    const alert   = document.getElementById('alert');
+    const alertMsg = document.getElementById('alert-msg');
+
+    btnText.style.display = 'none';
+    spinner.style.display = 'inline';
+    btn.disabled = true;
+    alert.classList.remove('show');
+
+    try {
+      const res = await fetch('/api/login', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          email:    document.getElementById('email').value.trim(),
+          password: document.getElementById('password').value,
+        }),
+      });
+      const data = await res.json();
+      if (!res.ok) throw new Error(data.message || 'Ошибка входа');
+      localStorage.setItem('token', data.token);
+      localStorage.setItem('user',  JSON.stringify(data.user));
+      window.location.href = 'dashboard.html';
+    } catch (err) {
+      alertMsg.textContent = err.message;
+      alert.classList.add('show');
+    } finally {
+      btnText.style.display = '';
+      spinner.style.display = 'none';
+      btn.disabled = false;
+    }
+  });
+</script>
+</body>
+</html>
