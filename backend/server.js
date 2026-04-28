@@ -72,7 +72,7 @@ app.use((err, _req, res, _next) => {
 });
 
 const PORT = process.env.PORT || 5000;
-app.listen(PORT, () => {
+app.listen(PORT, '0.0.0.0', () => {
   console.log(`\n🚗  Автошкола API запущен на http://localhost:${PORT}`);
   console.log(`📋  Admin login: admin@autoshkola.ru / Admin1234!\n`);
 });
